@@ -41,9 +41,9 @@ public class RankingAppFrame extends JFrame {
         super("Ranking de Jogadores — PBL 02");
         this.arvore = new BinarySearchTree();
         this.treePanel = new TreePanel();
-        this.campoNicknameInserir = new JTextField(14);
-        this.campoRankingInserir = new JTextField(14);
-        this.campoNicknameBusca = new JTextField(14);
+        this.campoNicknameInserir = criarCampo();
+        this.campoRankingInserir = criarCampo();
+        this.campoNicknameBusca = criarCampo();
         this.status = new JLabel("Carregue o arquivo players.csv para começar.");
 
         setLayout(new BorderLayout());
@@ -122,6 +122,14 @@ public class RankingAppFrame extends JFrame {
         rotulo.setFont(new Font("Dialog", Font.PLAIN, 12));
         rotulo.setAlignmentX(Component.LEFT_ALIGNMENT);
         return rotulo;
+    }
+
+    private JTextField criarCampo() {
+        JTextField campo = new JTextField();
+        campo.setAlignmentX(Component.LEFT_ALIGNMENT);
+        campo.setMaximumSize(new Dimension(250, 28));
+        campo.setPreferredSize(new Dimension(250, 28));
+        return campo;
     }
 
     private void acaoCarregar() {

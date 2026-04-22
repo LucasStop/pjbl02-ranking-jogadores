@@ -22,8 +22,11 @@ public class TreeLayout {
         if (h == 0) {
             return 0;
         }
-        int folhas = (int) Math.pow(2, h - 1);
-        return Math.max(800, folhas * (DIAMETRO_NO + 20) + MARGEM * 2);
+        int niveisCheios = Math.min(h - 1, 8);
+        int folhas = (int) Math.pow(2, niveisCheios);
+        int larguraBalanceada = folhas * (DIAMETRO_NO + 20);
+        int larguraDesbalanceada = h * (DIAMETRO_NO + 10) + MARGEM * 2;
+        return Math.max(800, Math.max(larguraBalanceada, larguraDesbalanceada));
     }
 
     public static int alturaPreferida(Node raiz) {
