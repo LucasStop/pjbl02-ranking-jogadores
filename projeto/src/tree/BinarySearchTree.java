@@ -40,6 +40,42 @@ public class BinarySearchTree {
         return containsRanking(current.getRight(), ranking);
     }
 
+    public boolean search(String nickname) {
+        return searchNode(root, nickname) != null;
+    }
+
+    public Player find(String nickname) {
+        Node encontrado = searchNode(root, nickname);
+        return encontrado == null ? null : encontrado.getPlayer();
+    }
+
+    private Node searchNode(Node current, String nickname) {
+        if (current == null) {
+            return null;
+        }
+        if (current.getPlayer().getNickname().equals(nickname)) {
+            return current;
+        }
+        Node esquerda = searchNode(current.getLeft(), nickname);
+        if (esquerda != null) {
+            return esquerda;
+        }
+        return searchNode(current.getRight(), nickname);
+    }
+
+    public void inOrder() {
+        inOrder(root);
+    }
+
+    private void inOrder(Node current) {
+        if (current == null) {
+            return;
+        }
+        inOrder(current.getLeft());
+        System.out.println(current.getPlayer().getRanking() + " - " + current.getPlayer().getNickname());
+        inOrder(current.getRight());
+    }
+
     public boolean isEmpty() {
         return root == null;
     }
