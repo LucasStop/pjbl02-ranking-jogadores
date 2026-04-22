@@ -63,6 +63,46 @@ public class BinarySearchTree {
         return searchNode(current.getRight(), nickname);
     }
 
+    public Player remove(String nickname) {
+        Player removido = find(nickname);
+        if (removido == null) {
+            return null;
+        }
+        root = remove(root, nickname);
+        return removido;
+    }
+
+    private Node remove(Node current, String nickname) {
+        if (current == null) {
+            return null;
+        }
+        if (current.getPlayer().getNickname().equals(nickname)) {
+            if (current.getLeft() == null && current.getRight() == null) {
+                return null;
+            }
+            if (current.getLeft() == null) {
+                return current.getRight();
+            }
+            if (current.getRight() == null) {
+                return current.getLeft();
+            }
+            Node sucessor = findMin(current.getRight());
+            current.setPlayer(sucessor.getPlayer());
+            current.setRight(remove(current.getRight(), sucessor.getPlayer().getNickname()));
+            return current;
+        }
+        current.setLeft(remove(current.getLeft(), nickname));
+        current.setRight(remove(current.getRight(), nickname));
+        return current;
+    }
+
+    private Node findMin(Node current) {
+        if (current.getLeft() == null) {
+            return current;
+        }
+        return findMin(current.getLeft());
+    }
+
     public void inOrder() {
         inOrder(root);
     }
