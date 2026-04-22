@@ -86,13 +86,11 @@ public class TreePanel extends JPanel {
         }
         Dimension viewport = sp.getViewport().getExtentSize();
         int largura = TreeLayout.larguraPreferida(raiz);
-        int altura = TreeLayout.alturaPreferida(raiz);
-        if (largura <= 0 || altura <= 0) {
+        if (largura <= 0) {
             return;
         }
         double fx = (double) viewport.width / largura;
-        double fy = (double) viewport.height / altura;
-        setZoom(Math.min(fx, fy));
+        setZoom(Math.max(0.5, Math.min(1.0, fx)));
         sp.getViewport().setViewPosition(new Point(0, 0));
     }
 
@@ -156,21 +154,33 @@ public class TreePanel extends JPanel {
         g.setFont(fonte);
         g.setColor(COR_TEXTO);
         FontMetrics fm = g.getFontMetrics();
-        int largura = fm.stringWidth(texto);
+        String ajustado = truncar(texto, fm, TreeLayout.DIAMETRO_NO - 4);
+        int largura = fm.stringWidth(ajustado);
         int altura = fm.getAscent() - fm.getDescent();
-        g.drawString(texto, cx - largura / 2, cy + altura / 2);
+        g.drawString(ajustado, cx - largura / 2, cy + altura / 2);
     }
 
     private Font escolherFonte(Graphics2D g, String texto) {
-        int tamanho = 13;
+        int tamanho = 11;
         Font fonte = new Font("Dialog", Font.BOLD, tamanho);
         FontMetrics fm = g.getFontMetrics(fonte);
-        while (fm.stringWidth(texto) > TreeLayout.DIAMETRO_NO - 8 && tamanho > 8) {
+        while (fm.stringWidth(texto) > TreeLayout.DIAMETRO_NO - 4 && tamanho > 7) {
             tamanho--;
             fonte = new Font("Dialog", Font.BOLD, tamanho);
             fm = g.getFontMetrics(fonte);
         }
         return fonte;
+    }
+
+    private String truncar(String texto, FontMetrics fm, int limite) {
+        if (fm.stringWidth(texto) <= limite) {
+            return texto;
+        }
+        int len = texto.length();
+        while (len > 0 && fm.stringWidth(texto.substring(0, len) + "…") > limite) {
+            len--;
+        }
+        return len == 0 ? "…" : texto.substring(0, len) + "…";
     }
 
     private void scrollPara(String nickname) {

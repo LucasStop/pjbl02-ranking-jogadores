@@ -4,9 +4,9 @@ import model.Node;
 
 public class TreeLayout {
 
-    public static final int DIAMETRO_NO = 70;
-    public static final int ESPACO_VERTICAL = 110;
-    public static final int MARGEM = 60;
+    public static final int DIAMETRO_NO = 48;
+    public static final int ESPACO_VERTICAL = 70;
+    public static final int MARGEM = 36;
 
     public static int altura(Node raiz) {
         if (raiz == null) {
@@ -24,9 +24,9 @@ public class TreeLayout {
         }
         int niveisCheios = Math.min(h - 1, 8);
         int folhas = (int) Math.pow(2, niveisCheios);
-        int larguraBalanceada = folhas * (DIAMETRO_NO + 20);
-        int larguraDesbalanceada = h * (DIAMETRO_NO + 10) + MARGEM * 2;
-        return Math.max(800, Math.max(larguraBalanceada, larguraDesbalanceada));
+        int larguraBalanceada = folhas * (DIAMETRO_NO + 12);
+        int larguraDesbalanceada = h * (DIAMETRO_NO + 8) + MARGEM * 2;
+        return Math.max(600, Math.max(larguraBalanceada, larguraDesbalanceada));
     }
 
     public static int alturaPreferida(Node raiz) {
