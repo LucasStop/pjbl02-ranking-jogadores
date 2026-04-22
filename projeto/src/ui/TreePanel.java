@@ -29,8 +29,9 @@ public class TreePanel extends JPanel {
     private static final Color COR_TEXTO = Color.WHITE;
     private static final Color COR_LINHA = new Color(180, 180, 180);
     private static final Color COR_DESTAQUE = new Color(255, 200, 60);
-    private static final double ZOOM_MIN = 0.2;
+    private static final double ZOOM_MIN = 0.1;
     private static final double ZOOM_MAX = 3.0;
+    private static final double LIMIAR_TEXTO = 18.0;
 
     private Node raiz;
     private String nicknameDestacado;
@@ -86,11 +87,13 @@ public class TreePanel extends JPanel {
         }
         Dimension viewport = sp.getViewport().getExtentSize();
         int largura = TreeLayout.larguraPreferida(raiz);
-        if (largura <= 0) {
+        int altura = TreeLayout.alturaPreferida(raiz);
+        if (largura <= 0 || altura <= 0) {
             return;
         }
         double fx = (double) viewport.width / largura;
-        setZoom(Math.max(0.5, Math.min(1.0, fx)));
+        double fy = (double) viewport.height / altura;
+        setZoom(Math.min(1.0, Math.min(fx, fy)));
         sp.getViewport().setViewPosition(new Point(0, 0));
     }
 
@@ -127,13 +130,13 @@ public class TreePanel extends JPanel {
             int nx = x - deslocamento;
             int ny = y + TreeLayout.ESPACO_VERTICAL;
             g.drawLine(x, y, nx, ny);
-            desenhar(g, no.getLeft(), nx, ny, Math.max(deslocamento / 2, TreeLayout.DIAMETRO_NO));
+            desenhar(g, no.getLeft(), nx, ny, Math.max(deslocamento / 2, TreeLayout.DESLOCAMENTO_MIN));
         }
         if (no.getRight() != null) {
             int nx = x + deslocamento;
             int ny = y + TreeLayout.ESPACO_VERTICAL;
             g.drawLine(x, y, nx, ny);
-            desenhar(g, no.getRight(), nx, ny, Math.max(deslocamento / 2, TreeLayout.DIAMETRO_NO));
+            desenhar(g, no.getRight(), nx, ny, Math.max(deslocamento / 2, TreeLayout.DESLOCAMENTO_MIN));
         }
         desenharNo(g, no, x, y);
     }
@@ -146,7 +149,9 @@ public class TreePanel extends JPanel {
         g.setColor(COR_BORDA);
         g.setStroke(new BasicStroke(2f));
         g.drawOval(x - raio, y - raio, TreeLayout.DIAMETRO_NO, TreeLayout.DIAMETRO_NO);
-        desenharTextoCentralizado(g, no.getPlayer().getNickname(), x, y);
+        if (TreeLayout.DIAMETRO_NO * zoom >= LIMIAR_TEXTO || destacado) {
+            desenharTextoCentralizado(g, no.getPlayer().getNickname(), x, y);
+        }
     }
 
     private void desenharTextoCentralizado(Graphics2D g, String texto, int cx, int cy) {
@@ -212,13 +217,13 @@ public class TreePanel extends JPanel {
         }
         Point esq = posicaoDoNo(no.getLeft(), nickname,
                 x - deslocamento, y + TreeLayout.ESPACO_VERTICAL,
-                Math.max(deslocamento / 2, TreeLayout.DIAMETRO_NO));
+                Math.max(deslocamento / 2, TreeLayout.DESLOCAMENTO_MIN));
         if (esq != null) {
             return esq;
         }
         return posicaoDoNo(no.getRight(), nickname,
                 x + deslocamento, y + TreeLayout.ESPACO_VERTICAL,
-                Math.max(deslocamento / 2, TreeLayout.DIAMETRO_NO));
+                Math.max(deslocamento / 2, TreeLayout.DESLOCAMENTO_MIN));
     }
 
     private void configurarInteracao() {
