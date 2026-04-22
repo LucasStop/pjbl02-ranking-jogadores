@@ -81,6 +81,18 @@ public class RankingAppFrame extends JFrame {
         JButton botaoLimpar = criarBotao("Limpar árvore");
         botaoLimpar.addActionListener(e -> acaoLimpar());
 
+        JButton botaoZoomIn = criarBotao("Aumentar zoom");
+        botaoZoomIn.addActionListener(e -> treePanel.ajustarZoom(1.15));
+
+        JButton botaoZoomOut = criarBotao("Diminuir zoom");
+        botaoZoomOut.addActionListener(e -> treePanel.ajustarZoom(0.85));
+
+        JButton botaoZoomReset = criarBotao("Zoom 100%");
+        botaoZoomReset.addActionListener(e -> treePanel.resetarZoom());
+
+        JButton botaoAjustar = criarBotao("Ajustar à tela");
+        botaoAjustar.addActionListener(e -> treePanel.ajustarParaCaber());
+
         painel.add(criarTitulo("Arquivo"));
         painel.add(espaco(6));
         painel.add(botaoCarregar);
@@ -112,8 +124,30 @@ public class RankingAppFrame extends JFrame {
         painel.add(botaoInOrder);
         painel.add(espaco(4));
         painel.add(botaoLimpar);
+        painel.add(espaco(18));
+
+        painel.add(criarTitulo("Navegação"));
+        painel.add(espaco(6));
+        painel.add(botaoZoomIn);
+        painel.add(espaco(4));
+        painel.add(botaoZoomOut);
+        painel.add(espaco(4));
+        painel.add(botaoZoomReset);
+        painel.add(espaco(4));
+        painel.add(botaoAjustar);
+        painel.add(espaco(8));
+        painel.add(criarDica("Arraste para mover."));
+        painel.add(criarDica("Ctrl+Scroll para zoom."));
 
         return painel;
+    }
+
+    private JLabel criarDica(String texto) {
+        JLabel dica = new JLabel(texto);
+        dica.setForeground(new Color(140, 160, 180));
+        dica.setFont(new Font("Dialog", Font.ITALIC, 11));
+        dica.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return dica;
     }
 
     private JLabel criarRotulo(String texto) {
@@ -143,6 +177,7 @@ public class RankingAppFrame extends JFrame {
         try {
             int total = LerCSV.carregar(arquivo.getAbsolutePath(), arvore);
             atualizarArvore();
+            javax.swing.SwingUtilities.invokeLater(treePanel::ajustarParaCaber);
             setStatus("CSV carregado: " + total + " jogadores. Altura da árvore: " + arvore.height() + ".");
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this, "Erro ao ler o arquivo: " + ex.getMessage(),
