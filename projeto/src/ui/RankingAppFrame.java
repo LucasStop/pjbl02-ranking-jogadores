@@ -7,6 +7,7 @@ import tree.BinarySearchTree;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonModel;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -16,11 +17,16 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.io.File;
 import java.io.IOException;
 
@@ -29,6 +35,13 @@ public class RankingAppFrame extends JFrame {
     private static final Color FUNDO_CONTROLES = new Color(42, 46, 56);
     private static final Color COR_TEXTO = new Color(230, 230, 230);
     private static final Color COR_STATUS = new Color(180, 200, 220);
+    private static final Color COR_BOTAO = new Color(58, 64, 78);
+    private static final Color COR_BOTAO_HOVER = new Color(74, 82, 100);
+    private static final Color COR_BOTAO_PRESSED = new Color(46, 52, 64);
+    private static final Color COR_BOTAO_BORDA = new Color(86, 94, 112);
+    private static final Color COR_CAMPO_FUNDO = new Color(28, 32, 40);
+    private static final Color COR_CAMPO_BORDA = new Color(72, 80, 96);
+    private static final Color COR_TITULO = new Color(150, 180, 220);
 
     private final BinarySearchTree arvore;
     private final TreePanel treePanel;
@@ -161,8 +174,16 @@ public class RankingAppFrame extends JFrame {
     private JTextField criarCampo() {
         JTextField campo = new JTextField();
         campo.setAlignmentX(Component.LEFT_ALIGNMENT);
-        campo.setMaximumSize(new Dimension(250, 28));
-        campo.setPreferredSize(new Dimension(250, 28));
+        campo.setMaximumSize(new Dimension(250, 30));
+        campo.setPreferredSize(new Dimension(250, 30));
+        campo.setBackground(COR_CAMPO_FUNDO);
+        campo.setForeground(COR_TEXTO);
+        campo.setCaretColor(COR_TEXTO);
+        campo.setFont(new Font("Dialog", Font.PLAIN, 12));
+        campo.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(COR_CAMPO_BORDA, 1, true),
+                BorderFactory.createEmptyBorder(4, 8, 4, 8)
+        ));
         return campo;
     }
 
@@ -305,22 +326,59 @@ public class RankingAppFrame extends JFrame {
     }
 
     protected JButton criarBotao(String texto) {
-        JButton botao = new JButton(texto);
+        BotaoEscuro botao = new BotaoEscuro(texto);
         botao.setAlignmentX(Component.CENTER_ALIGNMENT);
         botao.setMaximumSize(new Dimension(250, 34));
-        botao.setFocusPainted(false);
+        botao.setPreferredSize(new Dimension(250, 34));
         return botao;
     }
 
     protected JLabel criarTitulo(String texto) {
-        JLabel titulo = new JLabel(texto);
-        titulo.setForeground(COR_TEXTO);
-        titulo.setFont(new Font("Dialog", Font.BOLD, 13));
+        JLabel titulo = new JLabel(texto.toUpperCase());
+        titulo.setForeground(COR_TITULO);
+        titulo.setFont(new Font("Dialog", Font.BOLD, 11));
         titulo.setAlignmentX(Component.LEFT_ALIGNMENT);
         return titulo;
     }
 
     protected Component espaco(int altura) {
         return Box.createVerticalStrut(altura);
+    }
+
+    private static final class BotaoEscuro extends JButton {
+
+        BotaoEscuro(String texto) {
+            super(texto);
+            setForeground(COR_TEXTO);
+            setFont(new Font("Dialog", Font.PLAIN, 12));
+            setFocusPainted(false);
+            setBorderPainted(false);
+            setContentAreaFilled(false);
+            setOpaque(false);
+            setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            setRolloverEnabled(true);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            ButtonModel modelo = getModel();
+            Color fundo = COR_BOTAO;
+            if (modelo.isPressed()) {
+                fundo = COR_BOTAO_PRESSED;
+            } else if (modelo.isRollover()) {
+                fundo = COR_BOTAO_HOVER;
+            }
+            int arco = 10;
+            g2.setColor(fundo);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), arco, arco);
+            g2.setColor(COR_BOTAO_BORDA);
+            g2.setStroke(new BasicStroke(1f));
+            g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, arco, arco);
+            g2.dispose();
+            super.paintComponent(g);
+        }
     }
 }
