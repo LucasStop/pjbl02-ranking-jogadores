@@ -6,6 +6,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -29,9 +30,11 @@ public class TreePanel extends JPanel {
     private static final Color COR_TEXTO = Color.WHITE;
     private static final Color COR_LINHA = new Color(180, 180, 180);
     private static final Color COR_DESTAQUE = new Color(255, 200, 60);
+    private static final Color COR_NOME = new Color(220, 228, 240);
+    private static final Color COR_NOME_DESTAQUE = new Color(255, 220, 120);
     private static final double ZOOM_MIN = 0.1;
     private static final double ZOOM_MAX = 3.0;
-    private static final double LIMIAR_TEXTO = 18.0;
+    private static final double LIMIAR_TEXTO = 14.0;
 
     private Node raiz;
     private String nicknameDestacado;
@@ -41,6 +44,7 @@ public class TreePanel extends JPanel {
     public TreePanel() {
         setBackground(COR_FUNDO);
         configurarInteracao();
+        ToolTipManager.sharedInstance().registerComponent(this);
     }
 
     public void setRaiz(Node raiz) {
@@ -149,43 +153,67 @@ public class TreePanel extends JPanel {
         g.setColor(COR_BORDA);
         g.setStroke(new BasicStroke(2f));
         g.drawOval(x - raio, y - raio, TreeLayout.DIAMETRO_NO, TreeLayout.DIAMETRO_NO);
+        desenharRankingDentro(g, String.valueOf(no.getPlayer().getRanking()), x, y);
         if (TreeLayout.DIAMETRO_NO * zoom >= LIMIAR_TEXTO || destacado) {
-            desenharTextoCentralizado(g, no.getPlayer().getNickname(), x, y);
+            desenharNomeAbaixo(g, no.getPlayer().getNickname(), x, y + raio, destacado);
         }
     }
 
-    private void desenharTextoCentralizado(Graphics2D g, String texto, int cx, int cy) {
-        Font fonte = escolherFonte(g, texto);
+    private void desenharRankingDentro(Graphics2D g, String texto, int cx, int cy) {
+        Font fonte = new Font("Dialog", Font.BOLD, 11);
         g.setFont(fonte);
         g.setColor(COR_TEXTO);
         FontMetrics fm = g.getFontMetrics();
-        String ajustado = truncar(texto, fm, TreeLayout.DIAMETRO_NO - 4);
-        int largura = fm.stringWidth(ajustado);
+        int largura = fm.stringWidth(texto);
         int altura = fm.getAscent() - fm.getDescent();
-        g.drawString(ajustado, cx - largura / 2, cy + altura / 2);
+        g.drawString(texto, cx - largura / 2, cy + altura / 2);
     }
 
-    private Font escolherFonte(Graphics2D g, String texto) {
-        int tamanho = 11;
-        Font fonte = new Font("Dialog", Font.BOLD, tamanho);
-        FontMetrics fm = g.getFontMetrics(fonte);
-        while (fm.stringWidth(texto) > TreeLayout.DIAMETRO_NO - 4 && tamanho > 7) {
-            tamanho--;
-            fonte = new Font("Dialog", Font.BOLD, tamanho);
-            fm = g.getFontMetrics(fonte);
-        }
-        return fonte;
+    private void desenharNomeAbaixo(Graphics2D g, String texto, int cx, int topo, boolean destacado) {
+        Font fonte = new Font("Dialog", destacado ? Font.BOLD : Font.PLAIN, 11);
+        g.setFont(fonte);
+        g.setColor(destacado ? COR_NOME_DESTAQUE : COR_NOME);
+        FontMetrics fm = g.getFontMetrics();
+        int largura = fm.stringWidth(texto);
+        int baseY = topo + 4 + fm.getAscent();
+        g.drawString(texto, cx - largura / 2, baseY);
     }
 
-    private String truncar(String texto, FontMetrics fm, int limite) {
-        if (fm.stringWidth(texto) <= limite) {
-            return texto;
+    @Override
+    public String getToolTipText(MouseEvent e) {
+        if (raiz == null) {
+            return null;
         }
-        int len = texto.length();
-        while (len > 0 && fm.stringWidth(texto.substring(0, len) + "…") > limite) {
-            len--;
+        int x = (int) (e.getX() / zoom);
+        int y = (int) (e.getY() / zoom);
+        int largura = TreeLayout.larguraPreferida(raiz);
+        Node alvo = noEm(raiz, x, y, largura / 2,
+                TreeLayout.MARGEM + TreeLayout.DIAMETRO_NO / 2, largura / 4);
+        if (alvo == null) {
+            return null;
         }
-        return len == 0 ? "…" : texto.substring(0, len) + "…";
+        return alvo.getPlayer().getNickname() + " — ranking " + alvo.getPlayer().getRanking();
+    }
+
+    private Node noEm(Node no, int px, int py, int x, int y, int deslocamento) {
+        if (no == null) {
+            return null;
+        }
+        int raio = TreeLayout.DIAMETRO_NO / 2;
+        int dx = px - x;
+        int dy = py - y;
+        if (dx * dx + dy * dy <= raio * raio) {
+            return no;
+        }
+        Node esq = noEm(no.getLeft(), px, py,
+                x - deslocamento, y + TreeLayout.ESPACO_VERTICAL,
+                Math.max(deslocamento / 2, TreeLayout.DESLOCAMENTO_MIN));
+        if (esq != null) {
+            return esq;
+        }
+        return noEm(no.getRight(), px, py,
+                x + deslocamento, y + TreeLayout.ESPACO_VERTICAL,
+                Math.max(deslocamento / 2, TreeLayout.DESLOCAMENTO_MIN));
     }
 
     private void scrollPara(String nickname) {
